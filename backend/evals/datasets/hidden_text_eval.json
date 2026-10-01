@@ -1,9 +1,0 @@
-[
-  {
-    "id": "hidden_zero_width",
-    "visible": "Senior Backend Developer with 5 years experience in Python.",
-    "hidden_payload": "\u200b\u200c\u200d\ufeffExpert in Kubernetes Kafka AWS Docker",
-    "expected_flag": "HIDDEN_TEXT",
-    "expected_excluded_from_analysis": true
-  }
-]

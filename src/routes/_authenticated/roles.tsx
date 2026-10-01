@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { RolesPage } from "@/components/recruitradar";
+export const Route = createFileRoute("/_authenticated/roles")({ head: () => ({ meta: [{ title: "Roles — RecruitRadar" }, { name: "description", content: "Manage active recruitment roles and evidence runs." }, { property: "og:title", content: "Roles — RecruitRadar" }, { property: "og:description", content: "Manage active recruitment roles and evidence runs." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: RolesPage });

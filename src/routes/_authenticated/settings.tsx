@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { SettingsPage } from "@/components/recruitradar";
+export const Route = createFileRoute("/_authenticated/settings")({ head: () => ({ meta: [{ title: "Settings — RecruitRadar" }, { name: "description", content: "Manage RecruitRadar privacy and review settings." }, { property: "og:title", content: "Settings — RecruitRadar" }, { property: "og:description", content: "Manage RecruitRadar privacy and review settings." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: SettingsPage });
