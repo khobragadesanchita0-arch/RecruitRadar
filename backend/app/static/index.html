@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RecruitRadar — Evidence-Backed Recruitment Intelligence</title>
+  <meta name="description" content="Explainable, LLM-free deterministic candidate ranking grounded strictly in verbatim resume evidence.">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header>
+    <div class="logo-container">
+      <div class="radar-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 12 18.5 5.5"/>
+          <path d="M12 3a9 9 0 0 1 9 9"/>
+        </svg>
+      </div>
+      <div>
+        <span class="brand-name">RecruitRadar</span>
+        <span class="brand-badge" style="margin-left: 0.5rem;">The Evidence Desk</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="blind-mode-badge" title="EEOC Compliance: Names, dates of birth, photos, addresses, and demographic cues are cryptographically sealed and excluded from analysis.">
+        <span class="dot"></span>
+        <span>Blind Mode Active</span>
+      </div>
+      <div id="role-selector-container" style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Active Role:</span>
+        <select id="active-role-select" class="form-select" style="width: 220px; padding: 0.35rem 0.65rem; font-size: 0.8rem;">
+          <option value="">Loading roles...</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div id="user-profile-badge" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+        <span id="user-email-display">Guest</span>
+        <button id="btn-auth-action" class="btn btn-secondary btn-sm" onclick="app.toggleAuthModal()">Sign In</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Application Navigation Tabs -->
+  <nav class="app-tabs">
+    <button class="tab-btn active" data-tab="shortlist">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      Evidence Desk (Shortlist)
+    </button>
+    <button class="tab-btn" data-tab="roles">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Roles & JDs
+    </button>
+    <button class="tab-btn" data-tab="candidates">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Candidate Ingestion
+    </button>
+    <button class="tab-btn" data-tab="interview">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Interview Kits
+    </button>
+    <button class="tab-btn" data-tab="approvals">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Approvals & Decisions
+    </button>
+    <button class="tab-btn" data-tab="audit">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Audit Trail (Cryptographic)
+    </button>
+  </nav>
+
+  <!-- Main View Area -->
+  <main class="container">
+    <!-- VIEW 1: EVIDENCE DESK SHORTLIST -->
+    <section id="view-shortlist" class="view-panel active">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">The Evidence Desk</h1>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
+            Deterministic, explainable candidate ranking. Verified evidence scores; keyword mentions score 0.
+          </p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-secondary" onclick="app.refreshShortlist()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+            Refresh
+          </button>
+          <button class="btn btn-secondary" onclick="app.triggerNewRun()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run Pipeline
+          </button>
+          <button class="btn btn-primary" onclick="app.openRequestApprovalModal()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            Request Shortlist Approval
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Run State Card -->
+      <div id="run-status-card" class="glass-card" style="display: none; margin-bottom: 1.5rem; border-left: 4px solid var(--accent-primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div class="radar-icon" style="width: 32px; height: 32px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem;">Pipeline Execution in Progress: <span id="run-state-badge" class="badge badge-partial">EXECUTING</span></div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Agents: JD Analysis → Evidence Extraction → Verifier → Matcher → Noise Detector → Ranker</div>
+            </div>
+          </div>
+          <span class="font-mono" id="run-id-label" style="font-size: 0.75rem; color: var(--text-muted);"></span>
+        </div>
+      </div>
+
+      <!-- Shortlist Table / Matrix -->
+      <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">Rank</th>
+              <th>Candidate (Anonymized)</th>
+              <th style="width: 110px;">Fit Score</th>
+              <th style="width: 120px;">Confidence</th>
+              <th>Requirement Matches</th>
+              <th>Noise Flags</th>
+              <th style="width: 130px; text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="shortlist-table-body">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                Select an active role and execute the pipeline to generate the evidence-backed shortlist.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 2: ROLES & JDs -->
+    <section id="view-roles" class="view-panel" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Roles & Job Descriptions</h1>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
+            Create and manage open positions. Job descriptions are parsed into structured must/nice requirements.
+          </p>
+        </div>
+        <button class="btn btn-primary" onclick="app.openNewRoleModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create New Role
+        </button>
+      </div>
+
+      <div id="roles-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;">
+        <!-- Loaded dynamically -->
+      </div>
+    </section>
+
+    <!-- VIEW 3: CANDIDATE INGESTION -->
+    <section id="view-candidates" class="view-panel" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Candidate Ingestion Pipeline</h1>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
+            Zero-trust file processing: ClamAV scan, Hidden Text detection, Prompt Injection filter, PII redaction shield.
+          </p>
+        </div>
+      </div>
+
+      <!-- Drag & Drop Upload Zone -->
+      <div class="glass-card" style="margin-bottom: 2rem;">
+        <div id="upload-dropzone" class="dropzone" onclick="document.getElementById('file-upload-input').click()">
+          <input type="file" id="file-upload-input" style="display: none;" accept=".pdf,.docx,.txt" multiple onchange="app.handleFilesSelected(this.files)">
+          <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(99, 102, 241, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem;">Drop candidate resumes here or click to browse</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Supports PDF, DOCX, and TXT files up to 10MB per file. Multi-file batch upload enabled.</p>
+        </div>
+      </div>
+
+      <!-- Ingested Candidates Table -->
+      <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 1rem; font-weight: 700;">Ingested Candidates for Active Role</h3>
+          <span id="candidate-count-badge" class="badge badge-low">0 Candidates</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Display Alias</th>
+              <th>Status</th>
+              <th>Parse Engine</th>
+              <th>Parse Confidence</th>
+              <th>Hidden Text Flags</th>
+              <th>Uploaded Date</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="candidates-table-body">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                No candidates ingested yet. Upload files to process.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 4: INTERVIEW KITS -->
+    <section id="view-interview" class="view-panel" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Gap-Targeted Interview Kits</h1>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
+            Objective technical questions generated from identified candidate gaps and claims. EEOC-compliant.
+          </p>
+        </div>
+      </div>
+      <div id="interview-kits-container">
+        <div class="glass-card" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+          Select a candidate in the Shortlist to view or generate their personalized Interview Kit.
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: APPROVALS & DECISIONS -->
+    <section id="view-approvals" class="view-panel" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Governance & Approvals</h1>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
+            Two-party approval workflows for shortlist sign-offs. Self-approval is strictly forbidden.
+          </p>
+        </div>
+      </div>
+      <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Run ID</th>
+              <th>State</th>
+              <th>Requested By</th>
+              <th>Decided By</th>
+              <th>Notes</th>
+              <th>Created At</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="approvals-table-body">
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                No approval requests found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 6: CRYPTOGRAPHIC AUDIT TRAIL -->
+    <section id="view-audit" class="view-panel" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Cryptographic Audit Trail</h1>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
+            Immutable SHA-256 hash-chained log of all rank overrides, flag dismissals, role mutations, and security events.
+          </p>
+        </div>
+        <button class="btn btn-secondary" onclick="app.refreshAuditLogs()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          Refresh Log
+        </button>
+      </div>
+
+      <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 120px;">Timestamp</th>
+              <th>Action</th>
+              <th>Actor</th>
+              <th>Resource</th>
+              <th>Previous Hash (SHA-256)</th>
+              <th>Current Hash (SHA-256)</th>
+              <th>Integrity</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                Loading audit trail records...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- THE EVIDENCE LENS (Candidate Detail Drawer) -->
+  <aside id="evidence-drawer" class="drawer">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <div class="radar-icon" style="width: 32px; height: 32px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div>
+          <h2 id="drawer-candidate-alias" style="font-size: 1.25rem; font-weight: 800;">Candidate Details</h2>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Evidence Lens & Verbatim Quotes</span>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="app.closeEvidenceDrawer()">✕ Close</button>
+    </div>
+
+    <!-- Candidate Score Summary in Drawer -->
+    <div class="glass-card" style="margin-bottom: 1.5rem; background: rgba(10, 13, 20, 0.7);">
+      <div style="display: flex; justify-content: space-around; text-align: center;">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Fit Score</div>
+          <div id="drawer-fit-score" style="font-size: 1.75rem; font-weight: 800; color: #fff;">--</div>
+        </div>
+        <div style="border-left: 1px solid var(--border-subtle); padding-left: 1.5rem;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Confidence</div>
+          <div id="drawer-confidence" style="font-size: 1.75rem; font-weight: 800; color: var(--accent-primary);">--</div>
+        </div>
+        <div style="border-left: 1px solid var(--border-subtle); padding-left: 1.5rem;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Rank</div>
+          <div id="drawer-rank" style="font-size: 1.75rem; font-weight: 800; color: #34d399;">--</div>
+        </div>
+      </div>
+      <div id="drawer-rationale" style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; border-top: 1px solid var(--border-subtle); padding-top: 0.75rem;">
+      </div>
+    </div>
+
+    <!-- Verbatim Evidence Section -->
+    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Verbatim Resume Evidence</h3>
+    <div id="drawer-evidence-list">
+      <!-- Injected dynamically -->
+    </div>
+  </aside>
+
+  <!-- MODAL: CREATE ROLE -->
+  <dialog id="modal-new-role" class="modal">
+    <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem;">Create New Role</h2>
+    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+      Paste your Job Description. The JD Analysis Agent will automatically extract must/nice requirements and skill mappings.
+    </p>
+    <form onsubmit="app.handleCreateRole(event)">
+      <div class="form-group">
+        <label class="form-label">Role Title</label>
+        <input type="text" id="new-role-title" class="form-input" placeholder="e.g. Senior Distributed Systems Engineer" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Description (JD Text)</label>
+        <textarea id="new-role-jd" class="form-textarea" rows="8" placeholder="Paste full job description including requirements, must-haves, nice-to-haves..." required></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-new-role').close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Role & Extract Requirements</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL: DISMISS NOISE FLAG -->
+  <dialog id="modal-dismiss-flag" class="modal">
+    <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem;">Dismiss Noise Flag</h2>
+    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+      Recruiter justifications are required and permanently recorded in the cryptographic audit log.
+    </p>
+    <form onsubmit="app.handleDismissFlagSubmit(event)">
+      <input type="hidden" id="dismiss-candidate-id">
+      <input type="hidden" id="dismiss-flag-type">
+      <div class="form-group">
+        <label class="form-label">Flag Type</label>
+        <input type="text" id="dismiss-flag-type-display" class="form-input" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mandatory Recruiter Rationale (min 10 characters)</label>
+        <textarea id="dismiss-reason" class="form-textarea" rows="3" placeholder="Explain why this flag is being dismissed..." required minlength="10"></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-dismiss-flag').close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Confirm Dismissal & Re-Score</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL: OVERRIDE RANK -->
+  <dialog id="modal-override-rank" class="modal">
+    <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem;">Manual Rank Override</h2>
+    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+      Manual ranking changes require a documented professional justification for audit compliance.
+    </p>
+    <form onsubmit="app.handleOverrideRankSubmit(event)">
+      <input type="hidden" id="override-candidate-id">
+      <div class="form-group">
+        <label class="form-label">New Rank</label>
+        <input type="number" id="override-new-rank" class="form-input" min="1" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mandatory Justification (min 10 characters)</label>
+        <textarea id="override-reason" class="form-textarea" rows="3" placeholder="Provide reason for rank override..." required minlength="10"></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-override-rank').close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Override</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL: REQUEST APPROVAL -->
+  <dialog id="modal-request-approval" class="modal">
+    <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem;">Request Shortlist Approval</h2>
+    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+      Submit the current ranked shortlist for formal sign-off.
+    </p>
+    <form onsubmit="app.handleRequestApprovalSubmit(event)">
+      <div class="form-group">
+        <label class="form-label">Hiring Manager / Stakeholder Notes</label>
+        <textarea id="approval-notes" class="form-textarea" rows="3" placeholder="Add any notes on candidate calibration, timeline, or interview availability..."></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-request-approval').close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit for Approval</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL: AUTHENTICATION -->
+  <dialog id="modal-auth" class="modal">
+    <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 1.25rem; padding-bottom: 0.5rem;">
+      <button type="button" id="auth-tab-login" class="tab-btn active" style="padding: 0.25rem 0.5rem;" onclick="app.switchAuthMode('login')">Sign In</button>
+      <button type="button" id="auth-tab-register" class="tab-btn" style="padding: 0.25rem 0.5rem;" onclick="app.switchAuthMode('register')">Register Workspace</button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="form-login" onsubmit="app.handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="login-email" class="form-input" placeholder="recruiter@company.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-auth').close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Sign In</button>
+      </div>
+    </form>
+
+    <!-- Register Form -->
+    <form id="form-register" style="display: none;" onsubmit="app.handleRegister(event)">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="reg-name" class="form-input" placeholder="Alex Morgan" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Work Email</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="alex@company.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Workspace / Organization Name</label>
+        <input type="text" id="reg-workspace" class="form-input" placeholder="Acme Talent" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="reg-password" class="form-input" placeholder="At least 8 characters" required minlength="8">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-auth').close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Workspace</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

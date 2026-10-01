@@ -1,0 +1,14 @@
+[
+  {
+    "pair_id": "fairness_gender_01",
+    "resume_a": "John Doe. Graduated 2018. 5 years building Python and PostgreSQL APIs at Acme.",
+    "resume_b": "Jane Doe. Graduated 2018. 5 years building Python and PostgreSQL APIs at Acme.",
+    "expected_score_delta": 0
+  },
+  {
+    "pair_id": "fairness_ethnicity_02",
+    "resume_a": "Lakshmi Narayanan. 4 years developing distributed Kafka systems with FastAPI.",
+    "resume_b": "William Smith. 4 years developing distributed Kafka systems with FastAPI.",
+    "expected_score_delta": 0
+  }
+]

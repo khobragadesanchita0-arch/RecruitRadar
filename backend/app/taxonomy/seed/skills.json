@@ -1,0 +1,22 @@
+[
+  {"canonical_name": "Python", "category": "Backend", "release_year": 1991},
+  {"canonical_name": "Kafka", "category": "Data & Messaging", "release_year": 2011},
+  {"canonical_name": "PostgreSQL", "category": "Databases", "release_year": 1996},
+  {"canonical_name": "Kubernetes", "category": "DevOps", "release_year": 2014},
+  {"canonical_name": "Docker", "category": "DevOps", "release_year": 2013},
+  {"canonical_name": "Go", "category": "Backend", "release_year": 2009},
+  {"canonical_name": "Rust", "category": "Systems", "release_year": 2015},
+  {"canonical_name": "React", "category": "Frontend", "release_year": 2013},
+  {"canonical_name": "TypeScript", "category": "Frontend", "release_year": 2012},
+  {"canonical_name": "FastAPI", "category": "Backend", "release_year": 2018},
+  {"canonical_name": "AWS", "category": "Cloud", "release_year": 2006},
+  {"canonical_name": "GCP", "category": "Cloud", "release_year": 2008},
+  {"canonical_name": "Redis", "category": "Databases", "release_year": 2009},
+  {"canonical_name": "Distributed Systems", "category": "Architecture", "release_year": 1980},
+  {"canonical_name": "Microservices", "category": "Architecture", "release_year": 2011},
+  {"canonical_name": "CI/CD", "category": "DevOps", "release_year": 2005},
+  {"canonical_name": "GraphQL", "category": "API", "release_year": 2015},
+  {"canonical_name": "PyTorch", "category": "Machine Learning", "release_year": 2016},
+  {"canonical_name": "TensorFlow", "category": "Machine Learning", "release_year": 2015},
+  {"canonical_name": "Next.js", "category": "Frontend", "release_year": 2016}
+]
